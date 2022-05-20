@@ -15,6 +15,9 @@ using namespace std;
 /*player stack size that contains all user choices*/
 #define stackSize2 10
 
+#define reshuffleLimit 3
+#define skipLimit 3
+
 /************************************************** Global variables **************************************************/
 /*Boolean that controls whether or not the game ends*/
 bool gameOver = false;
@@ -25,6 +28,12 @@ int raceValue;
 /* variables that store the summation of all pops both users make till the end of the game*/
 int player1Score = 0;
 int player2Score = 0;
+
+int reshuffleCounter1 = 0;
+int reshuffleCounter2 = 0;
+
+int skipCounter1 = 0;
+int skipCounter2 = 0;
 /*the variables that store the elapsed time by the programe from start to finish*/
 double  elapsed_time_inputs = 0, elapsed_time_total = 0;
 
@@ -34,7 +43,7 @@ void menu();
 /*A function that determines the state of the the boolean aiPlaying to specify the flow of the code whether it's a player against another player or a player against the computer*/
 void AIChecker();
 /*a functionn that detects whether or not any key was hit on the keyboard*/
-void checkKeyboard();
+char checkKeyboard();
 /*a function that shuffles the choices that appear to the users*/
 void gamePlayPreparation();
 /*a function that shuffle the choices for player 1 only*/
@@ -61,7 +70,7 @@ void whoWins();
 void continueGame();
 
 /*the stack that generates and stores the choices to be displayed to the users + some utility functions needed to make the game more fun */
-class Stack      
+class Stack
 {
 public:
     /*stack data and the index (top) that points to the top value in the stack*/
@@ -130,7 +139,7 @@ public:
             chosen[j] = j + 1;
         }
 
-        /*if the temporary array is not full, the following algorithm will generate calculated percentages of the race Value and fill the rest of 
+        /*if the temporary array is not full, the following algorithm will generate calculated percentages of the race Value and fill the rest of
         the temporary array (chosen[]) with these percentages*/
         unity_percentage = 0;
         /*Put all possible percentages in the array chosen[]*/
@@ -144,12 +153,12 @@ public:
             else if (chosen[i] == 0)
                 chosen[i]++;
         }
-        
+
         /*push all generated values to the stack of choices*/
         top = -1;
         for (int h = 0; h < stackSize1; h++)
         {
-           
+
             push(floor(chosen[h]));
         }
     }
@@ -160,7 +169,7 @@ public:
         top = -1;
         for (int h = 0; h < stackSize1; h++)
         {
-           
+
             push(floor(chosen[h]));
         }
         int temp = 0;
@@ -174,20 +183,20 @@ public:
         }
     }
     /*a function that randomly determines the race value*/
-    void setRaceValue(int maximum) 
+    void setRaceValue(int maximum)
     {
         top = 0;
 
         data[top] = (rand() % maximum) + 100;//from 100 to (maximum + 100)
 
     }
-   
+
 };
 /*the object that will be used to utilize this stack*/
 Stack initialValues;
 
 /*the stack that will store the player choices*/
-class Player 
+class Player
 {
 public:
     /*stack data and the index (top) that points to the top value in the stack*/
@@ -229,7 +238,7 @@ public:
         }
     }
     /*displaying the available choices for each player*/
-    void displayDeckChoices(int p) 
+    void displayDeckChoices(int p)
     {
         if (p == 1)
         {
@@ -246,7 +255,7 @@ public:
             cout << "Player " << p << " Deck choices: \n\n";
         }
         char temp = 'a';
-        for (int i = 0; i < cards; i++) // a loop for displaying the choices 
+        for (int i = 0; i < cards; i++) // a loop for displaying the choices
         {
             cout << temp << ") " << assignedValue[i] << endl;
             temp++;
@@ -335,7 +344,7 @@ int main()
 
 /************************************************** Function definitions **************************************************/
 /*function for displaying the games's rules*/
-void menu() 
+void menu()
 {
     cout << "********** Welcome to STACK GAME **********\n\n";
     cout << "Press any key to view the instructions...\n\n";
@@ -351,10 +360,11 @@ void menu()
     checkKeyboard();
 }
 
-void checkKeyboard()
+char checkKeyboard()
 {
     auto start = std::chrono::steady_clock::now();  //get the time when running the code
     bool x = true;
+    char a = 0;
     while (x)
     {
         /*_kbhit() is a function that detects if the the keyboard was hit*/
@@ -364,13 +374,14 @@ void checkKeyboard()
         }
     }
     /*to reset kbhit()*/
-    _getch();
+    a = _getch();
     auto end = std::chrono::steady_clock::now();  //get the end time
     double  elapsed_time2 = double(std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count()); //find the difference
     elapsed_time_inputs += elapsed_time2;
+    return a;
 }
 /*function that checks if the player wants to play against the computer or there is another player*/
-void AIChecker() 
+void AIChecker()
 {
     char k;
     cout << "Are you playing against AI? (Choose a or b, then press Enter)\n";
@@ -468,7 +479,9 @@ void player1TurnToPick()
     cout << "Player 1 turn to choose from the shown set above.\n\n";
     cout << "Please press a, b, c, or d to choose.\n\n";
     cout << "Press s to reshuffle the shown set.\n\n";
-    char a = 0;
+    cout << "Available Reshuffles left for player 1 = " << reshuffleLimit - reshuffleCounter1 << endl << endl;
+    cout << "-----------------------------------------------------------------------------------\n";
+    char a = 0, temp = 0;
     bool x = true;
     auto start = std::chrono::steady_clock::now();  //get the time when running the code
     while (x)
@@ -495,12 +508,35 @@ void player1TurnToPick()
                 x = false;
                 break;
             case 's':
-                gamePlayPreparation1();
-                system("cls");
-                cout << "Race Value is : " << raceValue << endl << endl;
-                player1TurnToPick();
-                x = false;
-                break;
+                if (reshuffleCounter1 == reshuffleLimit)
+                {
+                    if (temp != 's')
+                    {
+                        cout << "You consumed all available reshuffles. Please choose a card from the above set. \n\n";
+                        temp = a;
+                        break;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                else
+                {
+                    reshuffleCounter1++;
+                    gamePlayPreparation1();
+                    system("cls");
+                    cout << "Race Value is : " << raceValue << endl << endl;
+                    player1.displayDeckChoices(1);
+                    cout << endl;
+                    cout << "Player 1 turn to choose from the shown set above.\n\n";
+                    cout << "Please press a, b, c, or d to choose.\n\n";
+                    cout << "Press s to reshuffle the shown set.\n\n";
+                    cout << "Available Reshuffles left for player 1 = " << reshuffleLimit - reshuffleCounter1 << endl << endl;
+                    cout << "-----------------------------------------------------------------------------------\n";
+                   
+                    break;
+                }
             default:
                 cout << "Invalid Input !!, please enter a, b, c, or d.\n\n";
                 break;
@@ -520,7 +556,9 @@ void player2TurnToPick()
     cout << "Player 2 turn to choose from the shown set above.\n\n";
     cout << "Please press a, b, c, or d to choose.\n\n";
     cout << "Press s to reshuffle the shown set.\n\n";
-    char a = 0;
+    cout << "Available Reshuffles left for player 2 = " << reshuffleLimit - reshuffleCounter2 << endl << endl;
+    cout << "-----------------------------------------------------------------------------------\n";
+    char a = 0, temp = 0;;
     bool x = true;
     auto start = std::chrono::steady_clock::now();  //get the time when running the code
     while (x)
@@ -547,17 +585,42 @@ void player2TurnToPick()
                 x = false;
                 break;
             case 's':
-                gamePlayPreparation2();
-                system("cls");
-                cout << "Race Value is : " << raceValue << endl << endl;
-                player1.displayDeckChoices(1);
-                cout << endl;
-                cout << "Player 1 turn to choose from the shown set above.\n\n";
-                cout << "Please press a, b, c, or d to choose.\n\n";
-                cout << "Press s to reshuffle the shown set.\n\n";
-                player2TurnToPick();
-                x = false;
-                break;
+                if (reshuffleCounter2 == reshuffleLimit)
+                {
+                    if (temp != 's')
+                    {
+                        cout << "You consumed all available reshuffles. Please choose a card from the above set. \n\n";
+                        temp = a;
+                        break;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                else
+                {
+                    reshuffleCounter2++;
+                    gamePlayPreparation2();
+                    system("cls");
+                    cout << "Race Value is : " << raceValue << endl << endl;
+                    player1.displayDeckChoices(1);
+                    cout << endl;
+                    cout << "Player 1 turn to choose from the shown set above.\n\n";
+                    cout << "Please press a, b, c, or d to choose.\n\n";
+                    cout << "Press s to reshuffle the shown set.\n\n";
+                    cout << "Available Reshuffles left for player 1 = " << reshuffleLimit - reshuffleCounter1 << endl << endl;
+                    cout << "-----------------------------------------------------------------------------------\n";
+                    player2.displayDeckChoices(2);
+                    cout << endl;
+                    cout << "Player 2 turn to choose from the shown set above.\n\n";
+                    cout << "Please press a, b, c, or d to choose.\n\n";
+                    cout << "Press s to reshuffle the shown set.\n\n";
+                    cout << "Available Reshuffles left for player 2 = " << reshuffleLimit - reshuffleCounter2 << endl << endl;
+                    cout << "-----------------------------------------------------------------------------------\n";
+                   
+                    break;
+                }
 
             default:
                 cout << "Invalid Input !!, please enter a, b, c, or d.\n\n";
@@ -574,7 +637,7 @@ void player2TurnToPick()
  returns back to be below the race value and continue the game till his turns are finished*/
 void exceededRaceValue(int playerNumber, int previousScore)
 {
-    
+
     if (playerNumber == 1)
     {
         if (player1Score > raceValue)
@@ -641,7 +704,7 @@ void exceededRaceValue(int playerNumber, int previousScore)
         {
             if (previousScore > raceValue)
             {
-                cout << "\nAI has gone below the race value\n ";
+                cout << "\nPlayer 2 has gone below the race value\n ";
                 cout << "\nNext pop will be a positive value\n";
 
             }
@@ -658,16 +721,58 @@ void Game()
 {
     int previousScore1 = 0;
     int previousScore2 = 0;
-
+    char a = 0, temp1 = 0, temp2 = 0;
+    bool x = true, y = true;
     for (int i = 0; i < stackSize2; i++)
     {
         system("cls");
         cout << "********** Game Started **********\n";
         cout << "\n\nRace Value: " << raceValue << endl;
+        cout << "Pop round number : " << i + 1 << endl << endl;
         previousScore1 = player1Score;
-        cout << "\nPlayer 1 Turn to pop from his STACK\n\n Press any key to pop\n\n";
-        checkKeyboard();
-        player1Score += player1.pop();
+        cout << "\nPlayer 1 Turn to pop from his STACK\n\nPress s to skip turn, or press any other key to pop\n\n";
+        cout << "Available skips for player 1 = " << skipLimit - skipCounter1 << endl << endl;
+        
+        x = true;
+        auto start = std::chrono::steady_clock::now();  //get the time when running the code
+
+        while (x)
+        {
+            a = checkKeyboard();
+            switch (a)
+            {
+            case 's':
+                if (skipCounter1 == skipLimit)
+                {
+                    if (temp1 != 's')
+                    {
+                        cout << "You have consumed all available skips, please press any key to pop\n\n";
+                        temp1 = 's';
+                        break;
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                else
+                {
+
+                    skipCounter1++;
+                    x = false;
+                    break;
+                }
+            default:
+                temp1 = 0;
+                player1Score += player1.pop();
+                x = false;
+                break;
+            }
+            auto end = std::chrono::steady_clock::now();  //get the end time
+            double  elapsed_time4 = double(std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count()); //find the difference
+            elapsed_time_inputs += elapsed_time4;
+        }
+       
         cout << "Player 1 score = " << player1Score << endl << endl;
 
         exceededRaceValue(1, previousScore1);
@@ -676,7 +781,7 @@ void Game()
         if (aiPlaying)
         {
             previousScore2 = player2Score;
-            cout << "\nAI Turn to pop from his STACK\n\n Please wait...\n\n";
+            cout << "\nAI Turn to pop from his STACK\n\nPlease wait...\n\n";
             Sleep(500);
             player2Score += player2.pop();
             cout << "AI score = " << player2Score << endl << endl;
@@ -689,9 +794,45 @@ void Game()
         else
         {
             previousScore2 = player2Score;
-            cout << "\nPlayer 2 Turn to pop from his STACK\n\n Press any key to pop\n\n";
-            checkKeyboard();
-            player2Score += player2.pop();
+            cout << "\nPlayer 2 Turn to pop from his STACK\n\nPress s to skip turn, or press any key to pop\n\n";
+            cout << "Available skips for player 2 = " << skipLimit - skipCounter2 << endl << endl;
+           
+            y = true;
+            while (y)
+            {
+                a = checkKeyboard();
+                switch (a)
+                {
+                case 's':
+                    if (skipCounter2 == skipLimit)
+                    {
+                        if (temp2 != 's')
+                        {
+                            cout << "You have consumed all available skips, please press any key to pop\n\n";
+                            temp2 = 's';
+                            break;
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        skipCounter2++;
+                        y = false;
+                        break;
+                    }
+
+                default:
+                    temp2 = 0;
+                    player2Score += player2.pop();
+                    y = false;
+                    break;
+
+                }
+            }
+           
             cout << "Player 2 score = " << player2Score << endl << endl;
             exceededRaceValue(2, previousScore2);
 
@@ -806,7 +947,11 @@ void continueGame()
                 x = false;
                 break;
             case 13: // Ascii for Enter is 13
-                x = false;
+                reshuffleCounter1=0;
+				rshuffleCounter2=0;
+				skipCounter1=0;
+				skipCounter2=0;
+			    x = false;
                 break;
             default:
                 cout << "Invalid Input !!\n";
