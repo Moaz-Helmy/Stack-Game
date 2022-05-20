@@ -948,7 +948,7 @@ void continueGame()
                 break;
             case 13: // Ascii for Enter is 13
                 reshuffleCounter1=0;
-				rshuffleCounter2=0;
+				reshuffleCounter2=0;
 				skipCounter1=0;
 				skipCounter2=0;
 			    x = false;
