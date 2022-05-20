@@ -534,7 +534,7 @@ void player1TurnToPick()
                     cout << "Press s to reshuffle the shown set.\n\n";
                     cout << "Available Reshuffles left for player 1 = " << reshuffleLimit - reshuffleCounter1 << endl << endl;
                     cout << "-----------------------------------------------------------------------------------\n";
-                   
+
                     break;
                 }
             default:
@@ -618,7 +618,7 @@ void player2TurnToPick()
                     cout << "Press s to reshuffle the shown set.\n\n";
                     cout << "Available Reshuffles left for player 2 = " << reshuffleLimit - reshuffleCounter2 << endl << endl;
                     cout << "-----------------------------------------------------------------------------------\n";
-                   
+
                     break;
                 }
 
@@ -732,7 +732,7 @@ void Game()
         previousScore1 = player1Score;
         cout << "\nPlayer 1 Turn to pop from his STACK\n\nPress s to skip turn, or press any other key to pop\n\n";
         cout << "Available skips for player 1 = " << skipLimit - skipCounter1 << endl << endl;
-        
+
         x = true;
         auto start = std::chrono::steady_clock::now();  //get the time when running the code
 
@@ -772,7 +772,7 @@ void Game()
             double  elapsed_time4 = double(std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count()); //find the difference
             elapsed_time_inputs += elapsed_time4;
         }
-       
+
         cout << "Player 1 score = " << player1Score << endl << endl;
 
         exceededRaceValue(1, previousScore1);
@@ -796,7 +796,7 @@ void Game()
             previousScore2 = player2Score;
             cout << "\nPlayer 2 Turn to pop from his STACK\n\nPress s to skip turn, or press any key to pop\n\n";
             cout << "Available skips for player 2 = " << skipLimit - skipCounter2 << endl << endl;
-           
+
             y = true;
             while (y)
             {
@@ -832,7 +832,7 @@ void Game()
 
                 }
             }
-           
+
             cout << "Player 2 score = " << player2Score << endl << endl;
             exceededRaceValue(2, previousScore2);
 
@@ -947,11 +947,11 @@ void continueGame()
                 x = false;
                 break;
             case 13: // Ascii for Enter is 13
-                reshuffleCounter1=0;
-				reshuffleCounter2=0;
-				skipCounter1=0;
-				skipCounter2=0;
-			    x = false;
+                reshuffleCounter1 = 0;
+                reshuffleCounter2 = 0;
+                skipCounter1 = 0;
+                skipCounter2 = 0;
+                x = false;
                 break;
             default:
                 cout << "Invalid Input !!\n";
